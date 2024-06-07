@@ -5,6 +5,7 @@ import {
   CustomersTableType,
   FormattedCustomersTable,
 } from '@/app/lib/definitions';
+import { formatCurrency } from '@/app/lib/utils';
 
 export default async function CustomersTable({
   customers,
@@ -49,11 +50,11 @@ export default async function CustomersTable({
                     <div className="flex w-full items-center justify-between border-b py-5">
                       <div className="flex w-1/2 flex-col">
                         <p className="text-xs">Pending</p>
-                        <p className="font-medium">{customer.total_pending}</p>
+                        <p className="font-medium">{formatCurrency(parseInt(customer.total_pending,10))}</p>
                       </div>
                       <div className="flex w-1/2 flex-col">
                         <p className="text-xs">Paid</p>
-                        <p className="font-medium">{customer.total_paid}</p>
+                        <p className="font-medium">{formatCurrency(parseInt(customer.total_paid,10))}</p>
                       </div>
                     </div>
                     <div className="pt-4 text-sm">
@@ -105,10 +106,10 @@ export default async function CustomersTable({
                         {customer.total_invoices}
                       </td>
                       <td className="whitespace-nowrap bg-white px-4 py-5 text-sm">
-                        {customer.total_pending}
+                        {formatCurrency(parseInt(customer.total_pending,10))}
                       </td>
                       <td className="whitespace-nowrap bg-white px-4 py-5 text-sm group-first-of-type:rounded-md group-last-of-type:rounded-md">
-                        {customer.total_paid}
+                        {formatCurrency(parseInt(customer.total_paid,10))}
                       </td>
                     </tr>
                   ))}

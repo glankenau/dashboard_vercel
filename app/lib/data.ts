@@ -195,6 +195,31 @@ export async function fetchCustomers() {
   }
 }
 
+export async function fetchFormattedCustomers() {
+  try {
+    const data = await sql<FormattedCustomersTable>`
+      SELECT
+        customers.id,
+        customers.name,
+        customers.email,
+        customers.image_url,
+        COUNT(invoices.id) as total_invoices,
+        SUM(CASE WHEN invoices.status = 'pending' THEN invoices.amount ELSE 0 END) AS total_pending,
+        SUM(CASE WHEN invoices.status = 'paid' THEN invoices.amount ELSE 0 END) AS total_paid
+      FROM customers
+      LEFT JOIN invoices on customers.id = invoices.customer_id
+      GROUP BY customers.id, customers.name, customers.email, customers.image_url
+      ORDER BY name ASC
+    `;
+
+    const customers = data.rows;
+    return customers;
+  } catch(err) {
+    console.error('Database Error:', err);
+    throw new Error("Failed to fetch all customers.");
+  }
+}
+
 export async function fetchFilteredCustomers(query: string) {
   noStore();
   try {
