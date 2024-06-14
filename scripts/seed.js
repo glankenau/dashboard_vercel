@@ -2,6 +2,7 @@ const { PrismaClient } = require("@prisma/client");
 
 const prisma = new PrismaClient();
 
+const bcrypt = require('bcrypt');
 const {
   invoices,
   customers,
@@ -10,8 +11,15 @@ const {
 } = require('../app/lib/placeholder-data.js');
 
 async function main() {
+
+  const encryptedUsers = await Promise.all(
+    users.map(async (user) => {
+      const hashedPassword = await bcrypt.hash(user.password, 10);
+      return { ...user, password: hashedPassword}
+    })
+  );
   const seedUsers = await prisma.user.createMany({
-    data: users
+    data: encryptedUsers
   });
 
   console.log(seedUsers);
