@@ -93,7 +93,7 @@ export async function updateInvoice(
   const amountInCents = amount * 100;
  
   try {
-    await sql`
+    await prisma.$executeRaw`
       UPDATE invoices
       SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
       WHERE id = ${id}
@@ -108,13 +108,12 @@ export async function updateInvoice(
 
 export async function deleteInvoice(id: string) {
   try {
-    await sql`DELETE FROM invoices WHERE id = ${id}`;
+    await prisma.$executeRaw`DELETE FROM invoices WHERE id = ${id}`;
     revalidatePath('/dashboard/invoices');
     return { message: "Deleted Invoice" };
   } catch {
     return { message: 'Database Error: Failed to Delete Invoice' };
   }
-  
 }
 
 export async function authenticate(
