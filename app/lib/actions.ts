@@ -1,10 +1,11 @@
 'use server';
 import { z } from 'zod';
-import { sql } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { signIn } from '@/auth';
 import { AuthError } from 'next-auth';
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
 
 const FormSchema = z.object({
   id: z.string(),
@@ -52,14 +53,21 @@ export async function createInvoice(prevState: State, formData: FormData) {
   // Prepare data for insertion into the database
   const { customerId, amount, status } = validatedFields.data;
   const amountInCents = amount * 100;
-  const date = new Date().toISOString().split('T')[0];
+  const date = new Date().toISOString();
  
+  console.log(`These are the values of the invoice ${customerId} ${amountInCents} ${status} ${date}`)
   // Insert data into the database
   try {
-    await sql`
-      INSERT INTO invoices (customer_id, amount, status, date)
-      VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
-    `;
+    await prisma.invoice.create(
+      {
+        data: {
+            customer_id: customerId,
+            amount: amountInCents,
+            status: status,
+            date: date
+          }
+      }
+    );
   } catch (error) {
     // If a database error occurs, return a more specific error.
     return {
@@ -94,7 +102,7 @@ export async function updateInvoice(
   const amountInCents = amount * 100;
  
   try {
-    await sql`
+    await prisma.$executeRaw`
       UPDATE invoices
       SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
       WHERE id = ${id}
@@ -109,13 +117,12 @@ export async function updateInvoice(
 
 export async function deleteInvoice(id: string) {
   try {
-    await sql`DELETE FROM invoices WHERE id = ${id}`;
+    await prisma.$executeRaw`DELETE FROM invoices WHERE id = ${id}`;
     revalidatePath('/dashboard/invoices');
     return { message: "Deleted Invoice" };
   } catch {
     return { message: 'Database Error: Failed to Delete Invoice' };
   }
-  
 }
 
 export async function authenticate(
