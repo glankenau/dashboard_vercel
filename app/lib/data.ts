@@ -7,7 +7,8 @@ import {
   User,
   Revenue,
   FormattedCustomersTable,
-  LatestInvoice
+  LatestInvoice,
+  Invoice
 } from './definitions';
 import { formatCurrency } from './utils';
 import { unstable_noStore as noStore } from 'next/cache';
@@ -117,6 +118,8 @@ export async function fetchCardData() {
 }
 
 const ITEMS_PER_PAGE = 6;
+// This function is returning the values with a lot of empty spaces
+// causing that I have to use trim() to remove them.
 export async function fetchFilteredInvoices(
   query: string,
   currentPage: number,
@@ -145,6 +148,7 @@ export async function fetchFilteredInvoices(
       ORDER BY invoices.date DESC
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
     `;
+    console.log(invoices);
     return invoices;
   } catch (error) {
     console.error('Database Error:', error);
@@ -191,7 +195,7 @@ export async function fetchInvoiceById(id: string) {
       amount: invoice.amount / 100,
     }));
 
-    return invoice;
+    return <InvoiceForm>invoice[0];
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch invoice.');
